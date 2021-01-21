@@ -1,4 +1,4 @@
-package sample;
+package pl.edu.pw.mini.java.xmlomat;
 
 public interface xmlomat_UI {
     public void onFileLoadFail(String path);
