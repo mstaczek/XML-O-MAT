@@ -2,18 +2,15 @@ package pl.edu.pw.mini.java.xmlomat;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXParseException;
 
-import javax.print.Doc;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,11 +19,20 @@ import java.util.List;
 import static java.util.Collections.synchronizedList;
 
 public class XmlParser {
-    private final FileParsingUI ParentUI;
-    private final List<XmlWorker> ActiveWorkers = synchronizedList(new ArrayList<>());
+    private final FileParsingUI parentUI;
+    private final List<XmlWorker> activeWorkers = synchronizedList(new ArrayList<>());
 
-    public XmlParser(FileParsingUI parentUI) {
-        ParentUI = parentUI;
+    public XmlParser(FileParsingUI parentUI) throws TransformerConfigurationException {
+        this.parentUI = parentUI;
+
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer xmlTransformer = transformerFactory.newTransformer();
+
+        xmlTransformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+        xmlTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        xmlTransformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+        UnsavedXmlFile.outputTransformer = xmlTransformer;
     }
 
 
@@ -40,13 +46,13 @@ public class XmlParser {
     }
     private XmlWorker activateNewWorker(File file) {
         XmlWorker worker = new XmlWorker(file);
-        ActiveWorkers.add(worker);
+        activeWorkers.add(worker);
         worker.start();
         return worker;
     }
 
     public void cancelAll() {
-        for(XmlWorker worker : ActiveWorkers)
+        for(XmlWorker worker : activeWorkers)
             worker.cancel();
     }
 
@@ -62,19 +68,8 @@ public class XmlParser {
             System.out.println("Parsing file " + thisFile.getName() + "...");
             Document xmlContent = loadFile();
             if(!canceled) parseXML(xmlContent.getDocumentElement());
-            if(!canceled) convertToFile(xmlContent);
-//            try {
-//                for(int i = 4; i > 0; i--) {
-//                    if(canceled) break;
-//                    System.out.println("Thread: " + getName() + ", " + i);
-//                    // Let the thread sleep for a while.
-//                    Thread.sleep(500);
-//                }
-//            } catch (InterruptedException e) {
-//                System.out.println("Thread " + thisFile.getName() + " interrupted.");
-//                cleanPostExecution();
-//            }
-            System.out.println("Thread " + thisFile.getName() + " exiting.");
+            if(!canceled) parentUI.onFileParsed(convertToUnsavedFile(xmlContent));
+            System.out.println("File " + thisFile.getName() + " finished parsing.");
             cleanPostExecution();
         }
         private Document loadFile() {
@@ -90,12 +85,12 @@ public class XmlParser {
             } catch (SAXParseException e) {
                 System.out.println("Couldn't parse file "+thisFile.getName());
                 e.printStackTrace();
-                ParentUI.onFileInvalidStructure(thisFile.getAbsolutePath());
+                parentUI.onFileInvalidStructure(thisFile.getAbsolutePath());
                 cancel();
             } catch (Exception e) {
                 System.out.println("Couldn't load file "+thisFile.getName());
                 e.printStackTrace();
-                ParentUI.onFileLoadFail(thisFile.getAbsolutePath());
+                parentUI.onFileLoadFail(thisFile.getAbsolutePath());
                 cancel();
             }
             return null;
@@ -104,22 +99,9 @@ public class XmlParser {
             if(canceled) return;
             node.setAttribute("Wow", "17");
         }
-        private void convertToFile(Document document) {
-            try {
-                TransformerFactory transformerFactory = TransformerFactory.newInstance();
-                Transformer transf = transformerFactory.newTransformer();
-
-                transf.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-                transf.setOutputProperty(OutputKeys.INDENT, "yes");
-                transf.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-
-                DOMSource source = new DOMSource(document);
-                File myFile = new File("outputTest.xml");
-                StreamResult file = new StreamResult(myFile);
-                transf.transform(source, file);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        private UnsavedFile convertToUnsavedFile(Document document) {
+            DOMSource source = new DOMSource(document);
+            return new UnsavedXmlFile(source, thisFile.getAbsolutePath(), parentUI);
         }
 
         public void cancel() {
@@ -127,8 +109,8 @@ public class XmlParser {
             cleanPostExecution();
         }
         private void cleanPostExecution() {
-            boolean wasAnythingRemoved = ActiveWorkers.remove(this);
-            if(wasAnythingRemoved && ActiveWorkers.isEmpty()) ParentUI.endFileProcessing();
+            boolean wasAnythingRemoved = activeWorkers.remove(this);
+            if(wasAnythingRemoved && activeWorkers.isEmpty()) parentUI.endFileProcessing();
         }
     }
 }

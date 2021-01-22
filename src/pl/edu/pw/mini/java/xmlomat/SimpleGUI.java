@@ -135,6 +135,7 @@ public class SimpleGUI extends Application implements FileParsingUI{
             //skip ?
         } else {
             System.out.println("cancel all files");
+            xmlparser.cancelAll();
             // endFileProcessing(); <- nie tak dziala endFileProcessing
         }
     }
@@ -155,28 +156,31 @@ public class SimpleGUI extends Application implements FileParsingUI{
     }
 
     @Override
-    public void onFileParsed(UnsavedFile unsaved_xml_file) {
+    public void onFileParsed(UnsavedFile unsavedXmlFile) {
+        System.out.println("File parsed!");
+        unsavedXmlFile.save("outputTest.xml");
+
         if(processingSingleFile){
             DirectoryChooser directoryChooser = new DirectoryChooser();
             File selectedDirectory = directoryChooser.showDialog(stage);
 
             if (selectedDirectory != null) {
                 System.out.println("saving to directory: " + selectedDirectory.getAbsolutePath());
-//                unsaved_xml_file.save(selectedDirectory.getAbsolutePath());
+                unsavedXmlFile.save(selectedDirectory.getAbsolutePath());
             }
             else{
                 System.out.println("directory was not selected - decide what to do next");
-                onFileSaveFail(unsaved_xml_file);
+                onFileSaveFail(unsavedXmlFile);
             }
             resetGUIState();
         }
         else{
-//            unsaved_xml_file.save() //save again with default path or sth like that
+//            unsavedXmlFile.save() //save again with default path or sth like that
         }
     }
 
     @Override
-    public void onFileSaveFail(UnsavedFile unsaved_xml_file) {
+    public void onFileSaveFail(UnsavedFile unsavedXmlFile) {
         Alert a = new Alert(Alert.AlertType.CONFIRMATION);
         a.setTitle("Error");
         a.setHeaderText("Error saving file. Retry?");
@@ -191,7 +195,7 @@ public class SimpleGUI extends Application implements FileParsingUI{
 
              if (result.get() == buttonRetry) {
                  System.out.println("retry saving file");
-                 onFileParsed(unsaved_xml_file);
+                 onFileParsed(unsavedXmlFile);
              } else {
                  System.out.println("discard file");
             }
@@ -205,7 +209,7 @@ public class SimpleGUI extends Application implements FileParsingUI{
 
             if (result.get() == buttonRetry) {
                 System.out.println("retry saving file");
-                onFileParsed(unsaved_xml_file);
+                onFileParsed(unsavedXmlFile);
             } else {
                 System.out.println("skip file");
             }
