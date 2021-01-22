@@ -97,30 +97,61 @@ public class SimpleGUI extends Application implements xmlomat_UI{
 //        onFileLoadFail("/some/path/to/file");
 //        onFileInvalidStructure("/some/path/to/file");
 //        onFileSaveFail("/some/path/to/file");
-        processingSingleFile=true;
-        onFileParsed("/some/path/to/file");
-        processingSingleFile=false;
+//        processingSingleFile=true;
+//        onFileParsed("/some/path/to/file");
+//        processingSingleFile=false;
     }
 
 
     @Override
     public void onFileLoadFail(String path) {
-        Alert a = new Alert(Alert.AlertType.ERROR);
+        if(processingSingleFile) {
+            Alert a = new Alert(Alert.AlertType.ERROR);
+            a.setTitle("Error");
+            a.setHeaderText("Error encountered.");
+            a.setContentText("Could not access file: " + path);
+            a.showAndWait();
+            resetGUIState();
+        }
+        else{
+            showErrorMultithread(path);
+        }
+    }
+
+    private void showErrorMultithread(String path){
+        Alert a = new Alert(Alert.AlertType.CONFIRMATION);
         a.setTitle("Error");
-        a.setHeaderText("Error encountered.");
-        a.setContentText("Could not access file: " + path);
-        a.showAndWait();
-        resetGUIState();
+        a.setHeaderText("Error encountered while reading or processing: "+path);
+        a.setContentText("Skip this file or cancel all?");
+
+        ButtonType buttonTypeSkip = new ButtonType("Skip");
+        ButtonType buttonTypeCancelAll = new ButtonType("Cancel all", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        a.getButtonTypes().setAll(buttonTypeSkip, buttonTypeCancelAll);
+
+        Optional<ButtonType> result = a.showAndWait();
+        if (result.get() == buttonTypeSkip) {
+            System.out.println("skipped file");
+            //skip ?
+        } else {
+            System.out.println("cancel all files");
+            endFileProcessing();
+        }
     }
 
     @Override
     public void onFileInvalidStructure(String path) {
-        Alert a = new Alert(Alert.AlertType.ERROR);
-        a.setTitle("Error");
-        a.setHeaderText("Error encountered.");
-        a.setContentText("Could not parse file: "+ path);
-        a.showAndWait();
-        resetGUIState();
+         if(processingSingleFile){
+            Alert a = new Alert(Alert.AlertType.ERROR);
+            a.setTitle("Error");
+            a.setHeaderText("Error encountered.");
+            a.setContentText("Could not parse file: " + path);
+            a.showAndWait();
+            resetGUIState();
+        }
+        else{
+            showErrorMultithread(path);
+        }
     }
 
     @Override
@@ -139,6 +170,9 @@ public class SimpleGUI extends Application implements xmlomat_UI{
             }
             resetGUIState();
         }
+        else{
+//            unsaved_xml_file.save() //save again with default path or sth like that
+        }
     }
 
     @Override
@@ -146,19 +180,35 @@ public class SimpleGUI extends Application implements xmlomat_UI{
         Alert a = new Alert(Alert.AlertType.CONFIRMATION);
         a.setTitle("Error");
         a.setHeaderText("Error saving file. Retry?");
-        a.setContentText("Would you like to choose another directory and try again?");
+        ButtonType buttonRetry = new ButtonType("Yes, retry");
 
-        ButtonType buttonTypeRetry = new ButtonType("Yes, retry");
-        ButtonType buttonTypeCancel = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
+        if(processingSingleFile){
+            a.setContentText("Would you like to choose another directory and try again?");
+            ButtonType buttonTypeCancel = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
+            a.getButtonTypes().setAll(buttonRetry, buttonTypeCancel);
 
-        a.getButtonTypes().setAll(buttonTypeRetry, buttonTypeCancel);
+            Optional<ButtonType> result = a.showAndWait();
 
-        Optional<ButtonType> result = a.showAndWait();
-         if (result.get() == buttonTypeRetry) {
-             System.out.println("retry saving file");
-             onFileParsed(unsaved_xml_file);
-         } else {
-             System.out.println("discard file");
+             if (result.get() == buttonRetry) {
+                 System.out.println("retry saving file");
+                 onFileParsed(unsaved_xml_file);
+             } else {
+                 System.out.println("discard file");
+            }
+        }
+        else{
+            a.setContentText("Would you like to skip this file or try again?");
+            ButtonType buttonTypeSkip = new ButtonType("Skip", ButtonBar.ButtonData.CANCEL_CLOSE);
+            a.getButtonTypes().setAll(buttonRetry, buttonTypeSkip);
+
+            Optional<ButtonType> result = a.showAndWait();
+
+            if (result.get() == buttonRetry) {
+                System.out.println("retry saving file");
+                onFileParsed(unsaved_xml_file);
+            } else {
+                System.out.println("skip file");
+            }
         }
     }
 
@@ -166,8 +216,10 @@ public class SimpleGUI extends Application implements xmlomat_UI{
     public void endFileProcessing() {
         Alert a = new Alert(Alert.AlertType.NONE);
         a.setAlertType(Alert.AlertType.INFORMATION);
-        a.setContentText("Finished processing successfully.");
-        a.show();
+        a.setTitle("Finished");
+        a.setHeaderText("Finished");
+        a.setContentText("Finished processing files.");
+        a.showAndWait();
 
 //        xmlparser.cancelAll();
         resetGUIState();
