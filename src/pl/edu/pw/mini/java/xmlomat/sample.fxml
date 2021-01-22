@@ -18,7 +18,7 @@
       <RowConstraints minHeight="50.0" prefHeight="100.0" />
   </rowConstraints>
    <children>
-      <Label onMouseClicked="#buttontests" text="XML-O-MAT" textAlignment="JUSTIFY" GridPane.halignment="CENTER">
+      <Label text="XML-O-MAT" textAlignment="JUSTIFY" GridPane.halignment="CENTER">
          <font>
             <Font size="36.0" />
          </font></Label>

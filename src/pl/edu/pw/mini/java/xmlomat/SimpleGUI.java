@@ -12,7 +12,6 @@ import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -31,8 +30,8 @@ public class SimpleGUI extends Application implements FileParsingUI {
     private static XmlParser xmlparser;
     private Image minilogo = new Image("file:images/minilogo.png");
     private Image processingimg = new Image("file:images/processing.png");
-    private boolean processingManyFiles = false;
-    private boolean processingSingleFile = false;
+    private static boolean processingManyFiles = false;
+    private static boolean processingSingleFile = false;
 
 
     @Override
@@ -67,13 +66,7 @@ public class SimpleGUI extends Application implements FileParsingUI {
             processingSingleFile = true;
             System.out.println("file chosen: "+file.getAbsolutePath());
             xmlparser.parseFiles(file);
-
-            //for testing
-//            onFileParsed(new Object());
-//            endFileProcessing();
         }
-
-//        mainImage.setImage(minilogo); //just for tests now
     }
 
     public void parseMultipleFileOnClick(ActionEvent actionEvent) {
@@ -83,28 +76,12 @@ public class SimpleGUI extends Application implements FileParsingUI {
         FileChooser fil_chooser = new FileChooser();
         fil_chooser.setTitle("Choose single file");
         List<File> files = fil_chooser.showOpenMultipleDialog(stage);
-        if (!files.isEmpty()) {
+        if (files!=null) {
             processingManyFiles = true;
             System.out.println("files chosen: "+files);
             xmlparser.parseFiles(files);
-
-            //for testing
-            //onFileParsed(new Object());
-            //endFileProcessing();
         }
-
-//        mainImage.setImage(minilogo); //just for tests now
     }
-
-    public void buttontests(){
-//        onFileLoadFail("/some/path/to/file");
-//        onFileInvalidStructure("/some/path/to/file");
-//        onFileSaveFail("/some/path/to/file");
-//        processingSingleFile=true;
-//        onFileParsed("/some/path/to/file");
-//        processingSingleFile=false;
-    }
-
 
     @Override
     public void onFileLoadFail(String path) {
@@ -115,8 +92,8 @@ public class SimpleGUI extends Application implements FileParsingUI {
                 a.setHeaderText("Error encountered.");
                 a.setContentText("Could not access file: " + path);
                 a.showAndWait();
+                resetGUIState();
             });
-            resetGUIState();
         }
         else{
             showErrorMultithread(path);
@@ -132,18 +109,15 @@ public class SimpleGUI extends Application implements FileParsingUI {
 
             ButtonType buttonTypeSkip = new ButtonType("Skip");
             ButtonType buttonTypeCancelAll = new ButtonType("Cancel all", ButtonBar.ButtonData.CANCEL_CLOSE);
-
             a.getButtonTypes().setAll(buttonTypeSkip, buttonTypeCancelAll);
 
             Optional<ButtonType> result = a.showAndWait();
 
             if (result.get() == buttonTypeSkip) {
                 System.out.println("skipped file");
-                //skip ?
             } else {
                 System.out.println("cancel all files");
                 xmlparser.cancelAll();
-                // endFileProcessing(); <- nie tak dziala endFileProcessing
             }
         });
 
@@ -152,7 +126,6 @@ public class SimpleGUI extends Application implements FileParsingUI {
     @Override
     public void onFileInvalidStructure(String path) {
          if(processingSingleFile){
-
              Platform.runLater(() -> {
                 Alert a = new Alert(Alert.AlertType.ERROR);
                 a.setTitle("Error");
@@ -169,11 +142,12 @@ public class SimpleGUI extends Application implements FileParsingUI {
 
     @Override
     public void onFileParsed(UnsavedFile unsavedXmlFile) {
-//        processingSingleFile=true; // it shouldn't be this way...
         if(processingSingleFile){
             Platform.runLater(() -> {
                 FileChooser fileChooser = new FileChooser();
                 fileChooser.setInitialFileName("lel.xml");
+                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("XML files (*.xml)", "*.xml");
+                fileChooser.getExtensionFilters().add(extFilter);
                 File file = fileChooser.showSaveDialog(stage);
 
                 if (file != null) {
@@ -187,7 +161,9 @@ public class SimpleGUI extends Application implements FileParsingUI {
             });
         }
         else{
-//            unsavedXmlFile.save() //save again with default path or sth like that
+            File file = new File(unsavedXmlFile.getInputPath());
+            String path = file.getAbsoluteFile().getParent() + "\\processed_" + file.getName();
+            unsavedXmlFile.save(path);
         }
     }
 
@@ -242,13 +218,12 @@ public class SimpleGUI extends Application implements FileParsingUI {
             a.showAndWait();
             resetGUIState();
         });
-
     }
 
     private void resetGUIState(){
 
         mainImage.setImage(minilogo);
-//        processingSingleFile = false;
+        processingSingleFile = false;
         processingManyFiles = false;
     }
 }
