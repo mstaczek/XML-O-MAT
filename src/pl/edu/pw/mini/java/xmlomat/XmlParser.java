@@ -21,11 +21,11 @@ import java.util.List;
 
 import static java.util.Collections.synchronizedList;
 
-public class XML_parser {
-    private final xmlomat_UI ParentUI;
-    private final List<XML_worker> ActiveWorkers = synchronizedList(new ArrayList<>());
+public class XmlParser {
+    private final FileParsingUI ParentUI;
+    private final List<XmlWorker> ActiveWorkers = synchronizedList(new ArrayList<>());
 
-    public XML_parser(xmlomat_UI parentUI) {
+    public XmlParser(FileParsingUI parentUI) {
         ParentUI = parentUI;
     }
 
@@ -38,23 +38,23 @@ public class XML_parser {
         for(File file : files)
             activateNewWorker(file);
     }
-    private XML_worker activateNewWorker(File file) {
-        XML_worker worker = new XML_worker(file);
+    private XmlWorker activateNewWorker(File file) {
+        XmlWorker worker = new XmlWorker(file);
         ActiveWorkers.add(worker);
         worker.start();
         return worker;
     }
 
     public void cancelAll() {
-        for(XML_worker worker : ActiveWorkers)
+        for(XmlWorker worker : ActiveWorkers)
             worker.cancel();
     }
 
-    public class XML_worker extends Thread {
+    public class XmlWorker extends Thread {
         private final File thisFile;
         private boolean canceled = false;
 
-        XML_worker(File file) {
+        XmlWorker(File file) {
             thisFile = file;
         }
 

@@ -19,13 +19,13 @@ import java.util.List;
 import java.util.Optional;
 
 
-public class SimpleGUI extends Application implements xmlomat_UI{
+public class SimpleGUI extends Application implements FileParsingUI{
 
     public Button parseSingleFileButton;
     public Button parseMultipleFilesButton;
     public ImageView mainImage;
     private Stage stage;
-    private static XML_parser xmlparser;
+    private static XmlParser xmlparser;
     private Image minilogo = new Image("file:images/minilogo.png");
     private Image processingimg = new Image("file:images/processing.png");
     private boolean processingManyFiles = false;
@@ -34,7 +34,7 @@ public class SimpleGUI extends Application implements xmlomat_UI{
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        xmlparser = new XML_parser(this);
+        xmlparser = new XmlParser(this);
         stage = primaryStage;
 
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
