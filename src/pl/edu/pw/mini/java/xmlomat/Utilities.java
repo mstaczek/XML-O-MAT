@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.regex.PatternSyntaxException;
 
 public class Utilities {
     public static Iterable<Node> iterable(final NodeList nodeList) {

@@ -23,10 +23,52 @@ import static pl.edu.pw.mini.java.xmlomat.Utilities.parseRandomNumber;
 public class XmlParser {
     private final FileParsingUI parentUI;
     private final List<XmlWorker> activeWorkers = synchronizedList(new ArrayList<>());
+    private final HashMap<String, List<Element>> defaultDefinitions = new HashMap<>();
 
     public XmlParser(FileParsingUI parentUI) throws TransformerConfigurationException {
         this.parentUI = parentUI;
+        importDatasets();
+        configureOutputTransformer();
+    }
 
+    private void importDatasets() {
+        File dir = new File("datasets");
+        File[] directoryListing = dir.listFiles();
+        if (directoryListing != null) {
+            for (File set : directoryListing) {
+                loadDataset(set);
+            }
+        } else {
+            System.out.println("Couldn't find any datasets!");
+        }
+    }
+    private void loadDataset(File file) {
+        try {
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            dbFactory.setIgnoringComments(true);
+            dbFactory.setIgnoringElementContentWhitespace(true);
+
+            Document doc = dbFactory.newDocumentBuilder().parse(file);
+            doc.getDocumentElement().normalize();
+
+
+            List<Element> possibleElements = new ArrayList<>();
+            for(Node child : iterable(doc.getDocumentElement().getChildNodes())) {
+                try {possibleElements.add((Element) child);}
+                catch(ClassCastException e) {}
+            }
+
+            String key = file.getName().substring(4,file.getName().length()-4);
+            defaultDefinitions.put(key, possibleElements);
+
+            System.out.println("Loaded dataset "+file.getName());
+        } catch (Exception e) {
+            System.out.println("Couldn't load dataset "+file.getName());
+            e.printStackTrace();
+        }
+    }
+
+    private void configureOutputTransformer() throws TransformerConfigurationException {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer xmlTransformer = transformerFactory.newTransformer();
 
@@ -36,7 +78,6 @@ public class XmlParser {
 
         UnsavedXmlFile.outputTransformer = xmlTransformer;
     }
-
 
     public void parseFiles(File... files) {
         for(File file : files)
@@ -60,7 +101,7 @@ public class XmlParser {
     public class XmlWorker extends Thread {
         private final File thisFile;
         private boolean canceled = false;
-        private final HashMap<String, List<Element>> customDefinitions = new HashMap<>();
+        private final HashMap<String, List<Element>> customDefinitions = (HashMap<String, List<Element>>) defaultDefinitions.clone();
 
         XmlWorker(File file) {
             thisFile = file;
@@ -137,7 +178,7 @@ public class XmlParser {
                     List<Element> possibleElements = customDefinitions.get(key);
                     if(possibleElements == null) return false;
                     Node selectedElement = possibleElements.get(ThreadLocalRandom.current().nextInt(0, possibleElements.size()));
-                    node.getParentNode().insertBefore(selectedElement.cloneNode(true), node.getNextSibling());
+                    node.getParentNode().insertBefore(node.getOwnerDocument().adoptNode(selectedElement.cloneNode(true)), node.getNextSibling());
                     return true;
                 }
                 catch(Exception e) {e.printStackTrace();}
