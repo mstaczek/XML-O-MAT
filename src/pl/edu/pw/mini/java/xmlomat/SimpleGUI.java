@@ -155,7 +155,7 @@ public class SimpleGUI extends Application implements xmlomat_UI{
     }
 
     @Override
-    public void onFileParsed(Object unsaved_xml_file) {
+    public void onFileParsed(UnsavedFile unsaved_xml_file) {
         if(processingSingleFile){
             DirectoryChooser directoryChooser = new DirectoryChooser();
             File selectedDirectory = directoryChooser.showDialog(stage);
@@ -176,7 +176,7 @@ public class SimpleGUI extends Application implements xmlomat_UI{
     }
 
     @Override
-    public void onFileSaveFail(Object unsaved_xml_file) {
+    public void onFileSaveFail(UnsavedFile unsaved_xml_file) {
         Alert a = new Alert(Alert.AlertType.CONFIRMATION);
         a.setTitle("Error");
         a.setHeaderText("Error saving file. Retry?");
