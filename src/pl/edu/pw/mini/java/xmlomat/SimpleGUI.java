@@ -169,22 +169,22 @@ public class SimpleGUI extends Application implements FileParsingUI {
 
     @Override
     public void onFileParsed(UnsavedFile unsavedXmlFile) {
-        processingSingleFile=true; // it shouldn't be this way...
+//        processingSingleFile=true; // it shouldn't be this way...
         if(processingSingleFile){
-            DirectoryChooser directoryChooser = new DirectoryChooser();
             Platform.runLater(() -> {
-                File selectedDirectory = directoryChooser.showDialog(stage);
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setInitialFileName("lel.xml");
+                File file = fileChooser.showSaveDialog(stage);
 
-                if (selectedDirectory != null) {
-                    System.out.println("saving to directory: " + selectedDirectory.getAbsolutePath());
-                    unsavedXmlFile.save(selectedDirectory.getAbsolutePath());
+                if (file != null) {
+                    System.out.println("saving to directory: " + file.getAbsolutePath());
+                    unsavedXmlFile.save(file.getAbsolutePath());
                 }
-                else{
-                    System.out.println("directory was not selected - decide what to do next");
+                else {
+                    System.out.println("save location was not selected - decide what to do next");
                     onFileSaveFail(unsavedXmlFile);
-            }
+                }
             });
-            resetGUIState();
         }
         else{
 //            unsavedXmlFile.save() //save again with default path or sth like that
@@ -211,6 +211,7 @@ public class SimpleGUI extends Application implements FileParsingUI {
                      onFileParsed(unsavedXmlFile);
                  } else {
                      System.out.println("discard file");
+                     resetGUIState();
                 }
             }
             else{
@@ -239,14 +240,15 @@ public class SimpleGUI extends Application implements FileParsingUI {
             a.setHeaderText("Finished");
             a.setContentText("Finished processing files.");
             a.showAndWait();
+            resetGUIState();
         });
 
-        resetGUIState();
     }
 
     private void resetGUIState(){
+
         mainImage.setImage(minilogo);
-        processingSingleFile = false;
+//        processingSingleFile = false;
         processingManyFiles = false;
     }
 }
