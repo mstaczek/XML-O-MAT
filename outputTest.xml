@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wyniki_z_laboratorium>
+  <osoba>
+    <imie>Władysław</imie>
+    <nazwisko>Olejniczak</nazwisko>
+    <wynik>4.0</wynik>
+    <wartosc>123</wartosc>
+  </osoba>
+  <osoba>
+    <imie>Wojtek</imie>
+    <nazwisko>Jóźwiak</nazwisko>
+    <wynik>3.0</wynik>
+    <wartosc>123</wartosc>
+  </osoba>
+  <osoba>
+    <imie>Wojtek</imie>
+    <nazwisko>Kubiak</nazwisko>
+    <wynik>3.0</wynik>
+    <wartosc>123</wartosc>
+  </osoba>
+  <osoba>
+    <imie>Władysław</imie>
+    <nazwisko>Lis</nazwisko>
+    <wynik>3.0</wynik>
+    <wartosc>123</wartosc>
+  </osoba>
+  <osoba>
+    <imie>Patryk</imie>
+    <nazwisko>Mazurkiewicz</nazwisko>
+    <wynik>3.0</wynik>
+    <wartosc>123</wartosc>
+  </osoba>
+  <osoba>
+    <imie>Mikołaj</imie>
+    <nazwisko>Mazurkiewicz</nazwisko>
+    <wynik>3.0</wynik>
+  </osoba>
+</wyniki_z_laboratorium>

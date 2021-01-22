@@ -1,6 +1,7 @@
 package pl.edu.pw.mini.java.xmlomat;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -72,7 +73,7 @@ public class SimpleGUI extends Application implements FileParsingUI {
 //            endFileProcessing();
         }
 
-        mainImage.setImage(minilogo); //just for tests now
+//        mainImage.setImage(minilogo); //just for tests now
     }
 
     public void parseMultipleFileOnClick(ActionEvent actionEvent) {
@@ -92,7 +93,7 @@ public class SimpleGUI extends Application implements FileParsingUI {
             //endFileProcessing();
         }
 
-        mainImage.setImage(minilogo); //just for tests now
+//        mainImage.setImage(minilogo); //just for tests now
     }
 
     public void buttontests(){
@@ -108,11 +109,13 @@ public class SimpleGUI extends Application implements FileParsingUI {
     @Override
     public void onFileLoadFail(String path) {
         if(processingSingleFile) {
-            Alert a = new Alert(Alert.AlertType.ERROR);
-            a.setTitle("Error");
-            a.setHeaderText("Error encountered.");
-            a.setContentText("Could not access file: " + path);
-            a.showAndWait();
+            Platform.runLater(() -> {
+                Alert a = new Alert(Alert.AlertType.ERROR);
+                a.setTitle("Error");
+                a.setHeaderText("Error encountered.");
+                a.setContentText("Could not access file: " + path);
+                a.showAndWait();
+            });
             resetGUIState();
         }
         else{
@@ -121,36 +124,43 @@ public class SimpleGUI extends Application implements FileParsingUI {
     }
 
     private void showErrorMultithread(String path){
-        Alert a = new Alert(Alert.AlertType.CONFIRMATION);
-        a.setTitle("Error");
-        a.setHeaderText("Error encountered while reading or processing: "+path);
-        a.setContentText("Skip this file or cancel all?");
+        Platform.runLater(() -> {
+            Alert a = new Alert(Alert.AlertType.CONFIRMATION);
+            a.setTitle("Error");
+            a.setHeaderText("Error encountered while reading or processing: "+path);
+            a.setContentText("Skip this file or cancel all?");
 
-        ButtonType buttonTypeSkip = new ButtonType("Skip");
-        ButtonType buttonTypeCancelAll = new ButtonType("Cancel all", ButtonBar.ButtonData.CANCEL_CLOSE);
+            ButtonType buttonTypeSkip = new ButtonType("Skip");
+            ButtonType buttonTypeCancelAll = new ButtonType("Cancel all", ButtonBar.ButtonData.CANCEL_CLOSE);
 
-        a.getButtonTypes().setAll(buttonTypeSkip, buttonTypeCancelAll);
+            a.getButtonTypes().setAll(buttonTypeSkip, buttonTypeCancelAll);
 
-        Optional<ButtonType> result = a.showAndWait();
-        if (result.get() == buttonTypeSkip) {
-            System.out.println("skipped file");
-            //skip ?
-        } else {
-            System.out.println("cancel all files");
-            xmlparser.cancelAll();
-            // endFileProcessing(); <- nie tak dziala endFileProcessing
-        }
+            Optional<ButtonType> result = a.showAndWait();
+
+            if (result.get() == buttonTypeSkip) {
+                System.out.println("skipped file");
+                //skip ?
+            } else {
+                System.out.println("cancel all files");
+                xmlparser.cancelAll();
+                // endFileProcessing(); <- nie tak dziala endFileProcessing
+            }
+        });
+
     }
 
     @Override
     public void onFileInvalidStructure(String path) {
          if(processingSingleFile){
-            Alert a = new Alert(Alert.AlertType.ERROR);
-            a.setTitle("Error");
-            a.setHeaderText("Error encountered.");
-            a.setContentText("Could not parse file: " + path);
-            a.showAndWait();
-            resetGUIState();
+
+             Platform.runLater(() -> {
+                Alert a = new Alert(Alert.AlertType.ERROR);
+                a.setTitle("Error");
+                a.setHeaderText("Error encountered.");
+                a.setContentText("Could not parse file: " + path);
+                a.showAndWait();
+                resetGUIState();
+             });
         }
         else{
             showErrorMultithread(path);
@@ -159,19 +169,21 @@ public class SimpleGUI extends Application implements FileParsingUI {
 
     @Override
     public void onFileParsed(UnsavedFile unsavedXmlFile) {
-
+        processingSingleFile=true; // it shouldn't be this way...
         if(processingSingleFile){
             DirectoryChooser directoryChooser = new DirectoryChooser();
-            File selectedDirectory = directoryChooser.showDialog(stage);
+            Platform.runLater(() -> {
+                File selectedDirectory = directoryChooser.showDialog(stage);
 
-            if (selectedDirectory != null) {
-                System.out.println("saving to directory: " + selectedDirectory.getAbsolutePath());
-                unsavedXmlFile.save(selectedDirectory.getAbsolutePath());
+                if (selectedDirectory != null) {
+                    System.out.println("saving to directory: " + selectedDirectory.getAbsolutePath());
+                    unsavedXmlFile.save(selectedDirectory.getAbsolutePath());
+                }
+                else{
+                    System.out.println("directory was not selected - decide what to do next");
+                    onFileSaveFail(unsavedXmlFile);
             }
-            else{
-                System.out.println("directory was not selected - decide what to do next");
-                onFileSaveFail(unsavedXmlFile);
-            }
+            });
             resetGUIState();
         }
         else{
@@ -181,49 +193,53 @@ public class SimpleGUI extends Application implements FileParsingUI {
 
     @Override
     public void onFileSaveFail(UnsavedFile unsavedXmlFile) {
-        Alert a = new Alert(Alert.AlertType.CONFIRMATION);
-        a.setTitle("Error");
-        a.setHeaderText("Error saving file. Retry?");
-        ButtonType buttonRetry = new ButtonType("Yes, retry");
+        Platform.runLater(() -> {
+            Alert a = new Alert(Alert.AlertType.CONFIRMATION);
+            a.setTitle("Error");
+            a.setHeaderText("Error saving file. Retry?");
+            ButtonType buttonRetry = new ButtonType("Yes, retry");
 
-        if(processingSingleFile){
-            a.setContentText("Would you like to choose another directory and try again?");
-            ButtonType buttonTypeCancel = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
-            a.getButtonTypes().setAll(buttonRetry, buttonTypeCancel);
+            if(processingSingleFile){
+                a.setContentText("Would you like to choose another directory and try again?");
+                ButtonType buttonTypeCancel = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
+                a.getButtonTypes().setAll(buttonRetry, buttonTypeCancel);
 
-            Optional<ButtonType> result = a.showAndWait();
+                Optional<ButtonType> result = a.showAndWait();
 
-             if (result.get() == buttonRetry) {
-                 System.out.println("retry saving file");
-                 onFileParsed(unsavedXmlFile);
-             } else {
-                 System.out.println("discard file");
+                 if (result.get() == buttonRetry) {
+                     System.out.println("retry saving file");
+                     onFileParsed(unsavedXmlFile);
+                 } else {
+                     System.out.println("discard file");
+                }
             }
-        }
-        else{
-            a.setContentText("Would you like to skip this file or try again?");
-            ButtonType buttonTypeSkip = new ButtonType("Skip", ButtonBar.ButtonData.CANCEL_CLOSE);
-            a.getButtonTypes().setAll(buttonRetry, buttonTypeSkip);
+            else{
+                a.setContentText("Would you like to skip this file or try again?");
+                ButtonType buttonTypeSkip = new ButtonType("Skip", ButtonBar.ButtonData.CANCEL_CLOSE);
+                a.getButtonTypes().setAll(buttonRetry, buttonTypeSkip);
 
-            Optional<ButtonType> result = a.showAndWait();
+                Optional<ButtonType> result = a.showAndWait();
 
-            if (result.get() == buttonRetry) {
-                System.out.println("retry saving file");
-                onFileParsed(unsavedXmlFile);
-            } else {
-                System.out.println("skip file");
+                if (result.get() == buttonRetry) {
+                    System.out.println("retry saving file");
+                    onFileParsed(unsavedXmlFile);
+                } else {
+                    System.out.println("skip file");
+                }
             }
-        }
+        });
     }
 
     @Override
     public void endFileProcessing() {
-        Alert a = new Alert(Alert.AlertType.NONE);
-        a.setAlertType(Alert.AlertType.INFORMATION);
-        a.setTitle("Finished");
-        a.setHeaderText("Finished");
-        a.setContentText("Finished processing files.");
-        a.showAndWait();
+        Platform.runLater(() -> {
+            Alert a = new Alert(Alert.AlertType.NONE);
+            a.setAlertType(Alert.AlertType.INFORMATION);
+            a.setTitle("Finished");
+            a.setHeaderText("Finished");
+            a.setContentText("Finished processing files.");
+            a.showAndWait();
+        });
 
         resetGUIState();
     }
@@ -234,6 +250,4 @@ public class SimpleGUI extends Application implements FileParsingUI {
         processingManyFiles = false;
     }
 }
-
-
 
