@@ -14,12 +14,14 @@ import javafx.scene.image.ImageView;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+import javax.xml.transform.TransformerConfigurationException;
 import java.io.*;
 import java.util.List;
 import java.util.Optional;
 
 
-public class SimpleGUI extends Application implements FileParsingUI{
+public class SimpleGUI extends Application implements FileParsingUI {
 
     public Button parseSingleFileButton;
     public Button parseMultipleFilesButton;
@@ -33,7 +35,7 @@ public class SimpleGUI extends Application implements FileParsingUI{
 
 
     @Override
-    public void start(Stage primaryStage) throws Exception{
+    public void start(Stage primaryStage) throws Exception {
         xmlparser = new XmlParser(this);
         stage = primaryStage;
 
@@ -157,8 +159,6 @@ public class SimpleGUI extends Application implements FileParsingUI{
 
     @Override
     public void onFileParsed(UnsavedFile unsavedXmlFile) {
-        System.out.println("File parsed!");
-        unsavedXmlFile.save("outputTest.xml");
 
         if(processingSingleFile){
             DirectoryChooser directoryChooser = new DirectoryChooser();
@@ -218,15 +218,14 @@ public class SimpleGUI extends Application implements FileParsingUI{
 
     @Override
     public void endFileProcessing() {
-        System.out.println("Finished!");
-//        Alert a = new Alert(Alert.AlertType.NONE);
-//        a.setAlertType(Alert.AlertType.INFORMATION);
-//        a.setTitle("Finished");
-//        a.setHeaderText("Finished");
-//        a.setContentText("Finished processing files.");
-//        a.showAndWait();
-//
-//        resetGUIState();
+        Alert a = new Alert(Alert.AlertType.NONE);
+        a.setAlertType(Alert.AlertType.INFORMATION);
+        a.setTitle("Finished");
+        a.setHeaderText("Finished");
+        a.setContentText("Finished processing files.");
+        a.showAndWait();
+
+        resetGUIState();
     }
 
     private void resetGUIState(){

@@ -2,9 +2,9 @@ package pl.edu.pw.mini.java.xmlomat;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXParseException;
 
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -12,11 +12,13 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
+import static java.lang.Math.round;
 import static java.util.Collections.synchronizedList;
+import static pl.edu.pw.mini.java.xmlomat.Utilities.iterable;
+import static pl.edu.pw.mini.java.xmlomat.Utilities.parseRandomNumber;
 
 public class XmlParser {
     private final FileParsingUI parentUI;
@@ -44,11 +46,10 @@ public class XmlParser {
         for(File file : files)
             activateNewWorker(file);
     }
-    private XmlWorker activateNewWorker(File file) {
+    private void activateNewWorker(File file) {
         XmlWorker worker = new XmlWorker(file);
         activeWorkers.add(worker);
         worker.start();
-        return worker;
     }
 
     public void cancelAll() {
@@ -59,6 +60,7 @@ public class XmlParser {
     public class XmlWorker extends Thread {
         private final File thisFile;
         private boolean canceled = false;
+        private final HashMap<String, List<Element>> customDefinitions = new HashMap<>();
 
         XmlWorker(File file) {
             thisFile = file;
@@ -72,12 +74,14 @@ public class XmlParser {
             System.out.println("File " + thisFile.getName() + " finished parsing.");
             cleanPostExecution();
         }
+
         private Document loadFile() {
             try {
                 DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-                DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+                dbFactory.setIgnoringComments(true);
+                dbFactory.setIgnoringElementContentWhitespace(true);
 
-                Document doc = dBuilder.parse(thisFile);
+                Document doc = dbFactory.newDocumentBuilder().parse(thisFile);
                 doc.getDocumentElement().normalize();
 
                 return doc;
@@ -95,9 +99,78 @@ public class XmlParser {
             }
             return null;
         }
-        private void parseXML(Element node) {
-            if(canceled) return;
-            node.setAttribute("Wow", "17");
+
+        private boolean parseXML(Element node) {
+            if(canceled) return false;
+
+            // Node repetition
+            if(!node.getAttribute("XOM-repeat").isBlank()) {
+                try {
+                    long repeats = round(parseRandomNumber(node.getAttribute("XOM-repeat")))-1;
+                    node.removeAttribute("XOM-repeat");
+                    for(int i=0;i<repeats;i++)
+                        node.getParentNode().insertBefore(node.cloneNode(true), node.getNextSibling());
+                }
+                catch(Exception e) {e.printStackTrace();}
+            }
+
+            // Custom definition
+            if(node.getTagName().startsWith("XOM-define-")) {
+                try {
+                    List<Element> possibleElements = new ArrayList<>();
+                    for(Node child : iterable(node.getChildNodes())) {
+                        try {possibleElements.add((Element) child);}
+                        catch(ClassCastException e) {}
+                    }
+
+                    String key = node.getTagName().substring(11);
+                    customDefinitions.put(key, possibleElements);
+                }
+                catch(Exception e) {e.printStackTrace();}
+                return true;
+            }
+
+            // Generating item from custom definition
+            if(node.getTagName().startsWith("XOM-")) {
+                try {
+                    String key = node.getTagName().substring(4);
+                    List<Element> possibleElements = customDefinitions.get(key);
+                    if(possibleElements == null) return false;
+                    Node selectedElement = possibleElements.get(ThreadLocalRandom.current().nextInt(0, possibleElements.size()));
+                    node.getParentNode().insertBefore(selectedElement.cloneNode(true), node.getNextSibling());
+                    return true;
+                }
+                catch(Exception e) {e.printStackTrace();}
+                return false;
+            }
+
+            // Random inner value
+            if(!node.getAttribute("XOM-random").isBlank()) {
+                try {
+                    double newValue = parseRandomNumber(node.getAttribute("XOM-random"));
+                    node.removeAttribute("XOM-random");
+                    node.setTextContent(String.valueOf(newValue));
+                }
+                catch(Exception e) {e.printStackTrace();}
+            }
+
+            // Recursion on children
+            List<Node> deleteLater = new ArrayList<>();
+            for(Node child : iterable(node.getChildNodes())) {
+                try {
+                    boolean shouldBeRemoved = parseXML((Element) child);
+                    if(shouldBeRemoved)
+                        deleteLater.add(child);
+                }
+                catch(ClassCastException e) {
+                    if(child.getTextContent().isBlank())
+                        deleteLater.add(child);
+                }
+            }
+            for(Node child : deleteLater) {
+                node.removeChild(child);
+            }
+            return false;
         }
         private UnsavedFile convertToUnsavedFile(Document document) {
             DOMSource source = new DOMSource(document);
