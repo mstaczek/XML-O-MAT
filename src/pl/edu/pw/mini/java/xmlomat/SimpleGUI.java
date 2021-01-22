@@ -25,7 +25,7 @@ public class SimpleGUI extends Application implements xmlomat_UI{
     public Button parseMultipleFilesButton;
     public ImageView mainImage;
     private Stage stage;
-//    private XML_parser xmlparser;
+    private static XML_parser xmlparser;
     private Image minilogo = new Image("file:images/minilogo.png");
     private Image processingimg = new Image("file:images/processing.png");
     private boolean processingManyFiles = false;
@@ -34,7 +34,7 @@ public class SimpleGUI extends Application implements xmlomat_UI{
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-//        xmlparser = new XML_parser(this);
+        xmlparser = new XML_parser(this);
         stage = primaryStage;
 
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
@@ -63,11 +63,11 @@ public class SimpleGUI extends Application implements xmlomat_UI{
         if (file != null) {
             processingSingleFile = true;
             System.out.println("file chosen: "+file.getAbsolutePath());
-//            xmlparser.parseFiles(file);
+            xmlparser.parseFiles(file);
 
             //for testing
-            onFileParsed(new Object());
-            endFileProcessing();
+//            onFileParsed(new Object());
+//            endFileProcessing();
         }
 
         mainImage.setImage(minilogo); //just for tests now
@@ -83,11 +83,11 @@ public class SimpleGUI extends Application implements xmlomat_UI{
         if (!files.isEmpty()) {
             processingManyFiles = true;
             System.out.println("files chosen: "+files);
-//            xmlparser.parseFiles(files);
+            xmlparser.parseFiles(files);
 
             //for testing
-            onFileParsed(new Object());
-            endFileProcessing();
+            //onFileParsed(new Object());
+            //endFileProcessing();
         }
 
         mainImage.setImage(minilogo); //just for tests now
@@ -135,7 +135,7 @@ public class SimpleGUI extends Application implements xmlomat_UI{
             //skip ?
         } else {
             System.out.println("cancel all files");
-            endFileProcessing();
+            // endFileProcessing(); <- nie tak dziala endFileProcessing
         }
     }
 
@@ -214,15 +214,15 @@ public class SimpleGUI extends Application implements xmlomat_UI{
 
     @Override
     public void endFileProcessing() {
-        Alert a = new Alert(Alert.AlertType.NONE);
-        a.setAlertType(Alert.AlertType.INFORMATION);
-        a.setTitle("Finished");
-        a.setHeaderText("Finished");
-        a.setContentText("Finished processing files.");
-        a.showAndWait();
-
-//        xmlparser.cancelAll();
-        resetGUIState();
+        System.out.println("Finished!");
+//        Alert a = new Alert(Alert.AlertType.NONE);
+//        a.setAlertType(Alert.AlertType.INFORMATION);
+//        a.setTitle("Finished");
+//        a.setHeaderText("Finished");
+//        a.setContentText("Finished processing files.");
+//        a.showAndWait();
+//
+//        resetGUIState();
     }
 
     private void resetGUIState(){
