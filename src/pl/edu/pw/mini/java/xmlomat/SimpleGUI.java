@@ -5,7 +5,10 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.DirectoryChooser;
@@ -13,6 +16,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import java.io.*;
 import java.util.List;
+import java.util.Optional;
 
 
 public class SimpleGUI extends Application implements xmlomat_UI{
@@ -50,7 +54,6 @@ public class SimpleGUI extends Application implements xmlomat_UI{
     }
 
     public void parseSingleFileOnClick(ActionEvent actionEvent) {
-        processingSingleFile = true;
         mainImage.setImage(processingimg);
         System.out.println("parse Single FileOnClick");
 
@@ -58,15 +61,19 @@ public class SimpleGUI extends Application implements xmlomat_UI{
         fil_chooser.setTitle("Choose single file");
         File file = fil_chooser.showOpenDialog(stage);
         if (file != null) {
-            System.out.println(file.getAbsolutePath());
+            processingSingleFile = true;
+            System.out.println("file chosen: "+file.getAbsolutePath());
 //            xmlparser.parseFiles(file);
+
+            //for testing
+            onFileParsed(new Object());
+            endFileProcessing();
         }
 
         mainImage.setImage(minilogo); //just for tests now
     }
 
     public void parseMultipleFileOnClick(ActionEvent actionEvent) {
-        processingManyFiles = true;
         mainImage.setImage(processingimg);
         System.out.println("parse Multiple FileOnClick");
 
@@ -74,22 +81,46 @@ public class SimpleGUI extends Application implements xmlomat_UI{
         fil_chooser.setTitle("Choose single file");
         List<File> files = fil_chooser.showOpenMultipleDialog(stage);
         if (!files.isEmpty()) {
-            System.out.println(files);
+            processingManyFiles = true;
+            System.out.println("files chosen: "+files);
 //            xmlparser.parseFiles(files);
+
+            //for testing
+            onFileParsed(new Object());
+            endFileProcessing();
         }
 
         mainImage.setImage(minilogo); //just for tests now
     }
 
+    public void buttontests(){
+//        onFileLoadFail("/some/path/to/file");
+//        onFileInvalidStructure("/some/path/to/file");
+//        onFileSaveFail("/some/path/to/file");
+        processingSingleFile=true;
+        onFileParsed("/some/path/to/file");
+        processingSingleFile=false;
+    }
+
 
     @Override
     public void onFileLoadFail(String path) {
-
+        Alert a = new Alert(Alert.AlertType.ERROR);
+        a.setTitle("Error");
+        a.setHeaderText("Error encountered.");
+        a.setContentText("Could not access file: " + path);
+        a.showAndWait();
+        resetGUIState();
     }
 
     @Override
     public void onFileInvalidStructure(String path) {
-
+        Alert a = new Alert(Alert.AlertType.ERROR);
+        a.setTitle("Error");
+        a.setHeaderText("Error encountered.");
+        a.setContentText("Could not parse file: "+ path);
+        a.showAndWait();
+        resetGUIState();
     }
 
     @Override
@@ -97,25 +128,55 @@ public class SimpleGUI extends Application implements xmlomat_UI{
         if(processingSingleFile){
             DirectoryChooser directoryChooser = new DirectoryChooser();
             File selectedDirectory = directoryChooser.showDialog(stage);
-            System.out.println(selectedDirectory.getAbsolutePath());
 
             if (selectedDirectory != null) {
+                System.out.println("saving to directory: " + selectedDirectory.getAbsolutePath());
 //                unsaved_xml_file.save(selectedDirectory.getAbsolutePath());
-                System.out.println(selectedDirectory.getAbsolutePath());
             }
+            else{
+                System.out.println("directory was not selected - decide what to do next");
+                onFileSaveFail(unsaved_xml_file);
+            }
+            resetGUIState();
         }
-        mainImage.setImage(minilogo);
     }
 
     @Override
     public void onFileSaveFail(Object unsaved_xml_file) {
+        Alert a = new Alert(Alert.AlertType.CONFIRMATION);
+        a.setTitle("Error");
+        a.setHeaderText("Error saving file. Retry?");
+        a.setContentText("Would you like to choose another directory and try again?");
 
+        ButtonType buttonTypeRetry = new ButtonType("Yes, retry");
+        ButtonType buttonTypeCancel = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        a.getButtonTypes().setAll(buttonTypeRetry, buttonTypeCancel);
+
+        Optional<ButtonType> result = a.showAndWait();
+         if (result.get() == buttonTypeRetry) {
+             System.out.println("retry saving file");
+             onFileParsed(unsaved_xml_file);
+         } else {
+             System.out.println("discard file");
+        }
     }
 
     @Override
     public void endFileProcessing() {
+        Alert a = new Alert(Alert.AlertType.NONE);
+        a.setAlertType(Alert.AlertType.INFORMATION);
+        a.setContentText("Finished processing successfully.");
+        a.show();
+
 //        xmlparser.cancelAll();
+        resetGUIState();
+    }
+
+    private void resetGUIState(){
         mainImage.setImage(minilogo);
+        processingSingleFile = false;
+        processingManyFiles = false;
     }
 }
 
