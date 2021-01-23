@@ -1,6 +1,8 @@
 package pl.edu.pw.mini.java.xmlomat;
 
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
@@ -27,10 +29,27 @@ public class UnsavedXmlFile implements UnsavedFile {
         try {
             File myFile = new File(path);
             StreamResult file = new StreamResult(myFile);
-            outputTransformer.transform(content, file);
+            createTransformer().transform(content, file);
         } catch (Exception e) {
             e.printStackTrace();
             parentUI.onFileSaveFail(this);
         }
+    }
+
+    private Transformer createTransformer() {
+        try {
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer xmlTransformer = transformerFactory.newTransformer();
+
+            xmlTransformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            xmlTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            xmlTransformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+            return xmlTransformer;
+        } catch (Exception e) {
+            e.printStackTrace();
+            parentUI.onFileSaveFail(this);
+        }
+        return null;
     }
 }

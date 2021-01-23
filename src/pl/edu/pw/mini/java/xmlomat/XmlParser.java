@@ -28,7 +28,6 @@ public class XmlParser {
     public XmlParser(FileParsingUI parentUI) throws TransformerConfigurationException {
         this.parentUI = parentUI;
         importDatasets();
-        configureOutputTransformer();
     }
 
     private void importDatasets() {
@@ -66,17 +65,6 @@ public class XmlParser {
             System.out.println("Couldn't load dataset "+file.getName());
             e.printStackTrace();
         }
-    }
-
-    private void configureOutputTransformer() throws TransformerConfigurationException {
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        Transformer xmlTransformer = transformerFactory.newTransformer();
-
-        xmlTransformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-        xmlTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
-        xmlTransformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-
-        UnsavedXmlFile.outputTransformer = xmlTransformer;
     }
 
     public void parseFiles(File... files) {
