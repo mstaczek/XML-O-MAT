@@ -25,7 +25,7 @@ public class XmlParser {
     private final List<XmlWorker> activeWorkers = synchronizedList(new ArrayList<>());
     private final HashMap<String, List<Element>> defaultDefinitions = new HashMap<>();
 
-    public XmlParser(FileParsingUI parentUI) throws TransformerConfigurationException {
+    public XmlParser(FileParsingUI parentUI) {
         this.parentUI = parentUI;
         importDatasets();
     }
