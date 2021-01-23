@@ -12,10 +12,10 @@ import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import javax.xml.transform.TransformerConfigurationException;
 import java.io.*;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +32,7 @@ public class SimpleGUI extends Application implements FileParsingUI {
     private Image processingimg = new Image("file:images/processing.png");
     private static boolean processingManyFiles = false;
     private static boolean processingSingleFile = false;
+    private static String outDirectory = null;
 
 
     @Override
@@ -63,8 +64,8 @@ public class SimpleGUI extends Application implements FileParsingUI {
         fil_chooser.setTitle("Choose single file");
         File file = fil_chooser.showOpenDialog(stage);
         if (file != null) {
-            processingSingleFile = true;
             System.out.println("file chosen: "+file.getAbsolutePath());
+            processingSingleFile = true;
             xmlparser.parseFiles(file);
         }
     }
@@ -74,12 +75,88 @@ public class SimpleGUI extends Application implements FileParsingUI {
         System.out.println("parse Multiple FileOnClick");
 
         FileChooser fil_chooser = new FileChooser();
-        fil_chooser.setTitle("Choose single file");
+        fil_chooser.setTitle("Choose one or more files");
         List<File> files = fil_chooser.showOpenMultipleDialog(stage);
-        if (files!=null) {
-            processingManyFiles = true;
-            System.out.println("files chosen: "+files);
-            xmlparser.parseFiles(files);
+        if (files != null) {
+            outDirectory = null;
+            System.out.println("files chosen: " + files);
+            String inputDirectory = files.get(0).getAbsoluteFile().getParent();
+            outDirectory = getOutputDirectoryPath(inputDirectory);
+
+            if(outDirectory != null){
+                processingManyFiles = true;
+                xmlparser.parseFiles(files);
+            }
+            else{
+                showCustomError("No output directory selected");
+            }
+        }
+        else{
+            showCustomError("No files were selected");
+        }
+    }
+
+
+    private void showCustomError(String msg){
+        Alert a = new Alert(Alert.AlertType.ERROR);
+        a.setTitle("Error");
+        a.setHeaderText("Error encountered.");
+        a.setContentText(msg);
+        a.showAndWait();
+    }
+
+    private String getOutputDirectoryPath(String originalDirectory){
+        String newOutDirectory = null;
+        boolean choosingDirectoryFailed = false;
+        do {
+            DirectoryChooser directoryChooser = new DirectoryChooser();
+            directoryChooser.setTitle("Choose output directory");
+            directoryChooser.setInitialDirectory(new File(originalDirectory));
+            File chosenOutDirectory = directoryChooser.showDialog(stage);
+            if (chosenOutDirectory != null) {
+                newOutDirectory = chosenOutDirectory.getAbsolutePath();
+                if(newOutDirectory.equals(originalDirectory)){
+                    showCustomError("Chosen output directory must be different from original.");
+                }
+            }
+            else {
+                choosingDirectoryFailed = true;
+                System.out.println("hmm... don't know where to save many files");
+                break;
+            }
+        } while (newOutDirectory.equals(originalDirectory));
+
+        if (choosingDirectoryFailed) {
+            if (onChoosingOutputDirFail().equals("Retry")) {
+                System.out.println("retry choosing output directory file");
+                return getOutputDirectoryPath(originalDirectory);
+            } else {
+                System.out.println("cancel processing");
+                return null;
+            }
+        } else {
+            System.out.println("chosen output directory is " + newOutDirectory);
+            return newOutDirectory;
+        }
+
+    }
+
+    private String onChoosingOutputDirFail(){
+        Alert a = new Alert(Alert.AlertType.CONFIRMATION);
+        a.setTitle("Error");
+        a.setHeaderText("Error choosing output directory. You should choose a directory different from one containing processed files");
+        a.setContentText("Would you like to choose another directory or cancel?");
+
+        ButtonType buttonRetry = new ButtonType("Yes, retry");
+        ButtonType buttonTypeCancel = new ButtonType("No,cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        a.getButtonTypes().setAll(buttonRetry, buttonTypeCancel);
+
+        Optional<ButtonType> result = a.showAndWait();
+
+        if (result.isPresent() && result.get() == buttonRetry) {
+            return "Retry";
+        } else {
+            return "Cancel";
         }
     }
 
@@ -87,12 +164,7 @@ public class SimpleGUI extends Application implements FileParsingUI {
     public void onFileLoadFail(String path) {
         if(processingSingleFile) {
             Platform.runLater(() -> {
-                Alert a = new Alert(Alert.AlertType.ERROR);
-                a.setTitle("Error");
-                a.setHeaderText("Error encountered.");
-                a.setContentText("Could not access file: " + path);
-                a.showAndWait();
-                resetGUIState();
+                showCustomError("Could not access file: " + path);
             });
         }
         else{
@@ -113,7 +185,7 @@ public class SimpleGUI extends Application implements FileParsingUI {
 
             Optional<ButtonType> result = a.showAndWait();
 
-            if (result.get() == buttonTypeSkip) {
+            if (result.isPresent() && result.get() == buttonTypeSkip) {
                 System.out.println("skipped file");
             } else {
                 System.out.println("cancel all files");
@@ -127,12 +199,7 @@ public class SimpleGUI extends Application implements FileParsingUI {
     public void onFileInvalidStructure(String path) {
          if(processingSingleFile){
              Platform.runLater(() -> {
-                Alert a = new Alert(Alert.AlertType.ERROR);
-                a.setTitle("Error");
-                a.setHeaderText("Error encountered.");
-                a.setContentText("Could not parse file: " + path);
-                a.showAndWait();
-                resetGUIState();
+                showCustomError("Could not parse file: " + path);
              });
         }
         else{
@@ -144,11 +211,7 @@ public class SimpleGUI extends Application implements FileParsingUI {
     public void onFileParsed(UnsavedFile unsavedXmlFile) {
         if(processingSingleFile){
             Platform.runLater(() -> {
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setInitialFileName("lel.xml");
-                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("XML files (*.xml)", "*.xml");
-                fileChooser.getExtensionFilters().add(extFilter);
-                File file = fileChooser.showSaveDialog(stage);
+                File file = chooseSingleOutputFile(unsavedXmlFile);
 
                 if (file != null) {
                     System.out.println("saving to directory: " + file.getAbsolutePath());
@@ -156,15 +219,28 @@ public class SimpleGUI extends Application implements FileParsingUI {
                 }
                 else {
                     System.out.println("save location was not selected - decide what to do next");
+                    processingSingleFile = true;
                     onFileSaveFail(unsavedXmlFile);
                 }
             });
         }
         else{
-            File file = new File(unsavedXmlFile.getInputPath());
-            String path = file.getAbsoluteFile().getParent() + "\\processed_" + file.getName();
-            unsavedXmlFile.save(path);
+            String processedFileName = new File(unsavedXmlFile.getInputPath()).getName();
+            unsavedXmlFile.save(outDirectory + "\\" + processedFileName);
         }
+    }
+
+    private File chooseSingleOutputFile(UnsavedFile unsavedXmlFile){
+        File processedFile = new File(unsavedXmlFile.getInputPath());
+        String originalDirectory = processedFile.getAbsoluteFile().getParent();
+        String originalName = processedFile.getName();
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialFileName("processed_" + originalName + ".xml");
+        fileChooser.setInitialDirectory(new File(originalDirectory));
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("XML files (*.xml)", "*.xml");
+        fileChooser.getExtensionFilters().add(extFilter);
+        return fileChooser.showSaveDialog(stage);
     }
 
     @Override
@@ -182,12 +258,12 @@ public class SimpleGUI extends Application implements FileParsingUI {
 
                 Optional<ButtonType> result = a.showAndWait();
 
-                 if (result.get() == buttonRetry) {
+                 if (result.isPresent() && result.get() == buttonRetry) {
                      System.out.println("retry saving file");
                      onFileParsed(unsavedXmlFile);
                  } else {
                      System.out.println("discard file");
-                     resetGUIState();
+                     endFileProcessing();
                 }
             }
             else{
@@ -197,7 +273,7 @@ public class SimpleGUI extends Application implements FileParsingUI {
 
                 Optional<ButtonType> result = a.showAndWait();
 
-                if (result.get() == buttonRetry) {
+                if (result.isPresent() && result.get() == buttonRetry) {
                     System.out.println("retry saving file");
                     onFileParsed(unsavedXmlFile);
                 } else {
@@ -210,8 +286,7 @@ public class SimpleGUI extends Application implements FileParsingUI {
     @Override
     public void endFileProcessing() {
         Platform.runLater(() -> {
-            Alert a = new Alert(Alert.AlertType.NONE);
-            a.setAlertType(Alert.AlertType.INFORMATION);
+            Alert a = new Alert(Alert.AlertType.INFORMATION);
             a.setTitle("Finished");
             a.setHeaderText("Finished");
             a.setContentText("Finished processing files.");
@@ -221,7 +296,6 @@ public class SimpleGUI extends Application implements FileParsingUI {
     }
 
     private void resetGUIState(){
-
         mainImage.setImage(minilogo);
         processingSingleFile = false;
         processingManyFiles = false;
