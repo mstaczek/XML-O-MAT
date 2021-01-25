@@ -28,8 +28,8 @@ public class SimpleGUI extends Application implements FileParsingUI {
     public ImageView mainImage;
     private Stage stage;
     private static XmlParser xmlparser;
-    private Image minilogo = new Image("file:images/minilogo.png");
-    private Image processingimg = new Image("file:images/processing.png");
+    private final Image minilogo = new Image("file:images/minilogo.png");
+    private final Image processingimg = new Image("file:images/processing.png");
     private static boolean processingManyFiles = false;
     private static boolean processingSingleFile = false;
     private static String outDirectory = null;
@@ -49,6 +49,7 @@ public class SimpleGUI extends Application implements FileParsingUI {
 
         mainImage = (ImageView) scene.lookup("#mainImage");
         mainImage.setImage(minilogo);
+        stage.getIcons().add(minilogo);
     }
 
 
@@ -163,9 +164,7 @@ public class SimpleGUI extends Application implements FileParsingUI {
     @Override
     public void onFileLoadFail(String path) {
         if(processingSingleFile) {
-            Platform.runLater(() -> {
-                showCustomError("Could not access file: " + path);
-            });
+            Platform.runLater(() -> showCustomError("Could not access file: " + path));
         }
         else{
             showErrorMultithread(path);
@@ -198,9 +197,7 @@ public class SimpleGUI extends Application implements FileParsingUI {
     @Override
     public void onFileInvalidStructure(String path) {
          if(processingSingleFile){
-             Platform.runLater(() -> {
-                showCustomError("Could not parse file: " + path);
-             });
+             Platform.runLater(() -> showCustomError("Could not parse file: " + path));
         }
         else{
             showErrorMultithread(path);
