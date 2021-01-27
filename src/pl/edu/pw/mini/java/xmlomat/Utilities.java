@@ -11,7 +11,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Utilities {
     public static Iterable<Node> iterable(final NodeList nodeList) {
-        return () -> new Iterator<>() {
+        return () -> new Iterator<Node>() {
 
             private int index = 0;
 
@@ -29,7 +29,7 @@ public class Utilities {
         };
     }
     public static Iterable<Node> iterable(final NamedNodeMap namedNodeMap) {
-        return () -> new Iterator<>() {
+        return () -> new Iterator<Node>() {
 
             private int index = 0;
 

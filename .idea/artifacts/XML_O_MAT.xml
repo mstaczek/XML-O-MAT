@@ -1,0 +1,17 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="XML-O-MAT">
+    <output-path>$PROJECT_DIR$/out/artifacts/XML_O_MAT</output-path>
+    <root id="archive" name="XML-O-MAT.jar">
+      <element id="module-output" name="XML-O-MAT" />
+      <element id="extracted-dir" path="$JAVA_FX$/src.zip" path-in-jar="/" />
+      <element id="extracted-dir" path="$JAVA_FX$/javafx-swt.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$JAVA_FX$/javafx.web.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$JAVA_FX$/javafx.base.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$JAVA_FX$/javafx.fxml.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$JAVA_FX$/javafx.media.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$JAVA_FX$/javafx.swing.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$JAVA_FX$/javafx.controls.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$JAVA_FX$/javafx.graphics.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

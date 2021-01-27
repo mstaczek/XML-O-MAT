@@ -126,7 +126,7 @@ public class XmlParser {
             if(canceled) return false;
 
             // Node repetition
-            if(!node.getAttribute("XOM-repeat").isBlank()) {
+            if(node.getAttribute("XOM-repeat").trim().length()!=0) {
                 try {
                     long repeats = round(parseRandomNumber(node.getAttribute("XOM-repeat")))-1;
                     node.removeAttribute("XOM-repeat");
@@ -171,7 +171,7 @@ public class XmlParser {
             }
 
             // Random inner value
-            if(!node.getAttribute("XOM-random").isBlank()) {
+            if(node.getAttribute("XOM-random").trim().length()!=0) {
                 try {
                     String newValue = stringifyRandomNumber(node.getAttribute("XOM-random"));
                     node.removeAttribute("XOM-random");
@@ -181,7 +181,7 @@ public class XmlParser {
             }
 
             // Renaming node
-            if(!node.getAttribute("XOM-rename").isBlank()) {
+            if(node.getAttribute("XOM-rename").trim().length()!=0) {
                 try {
                     String newValue = node.getAttribute("XOM-rename");
                     node.removeAttribute("XOM-rename");
@@ -199,7 +199,7 @@ public class XmlParser {
                         deleteLater.add(child);
                 }
                 catch(ClassCastException e) {
-                    if(child.getTextContent().isBlank())
+                    if(child.getTextContent().trim().length()==0)
                         deleteLater.add(child);
                 }
             }
