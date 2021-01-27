@@ -1,15 +1,9 @@
 package pl.edu.pw.mini.java.xmlomat;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+import org.w3c.dom.*;
 import org.xml.sax.SAXParseException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import java.io.File;
 import java.util.*;
@@ -166,7 +160,11 @@ public class XmlParser {
                     List<Element> possibleElements = customDefinitions.get(key);
                     if(possibleElements == null) return false;
                     Node selectedElement = possibleElements.get(ThreadLocalRandom.current().nextInt(0, possibleElements.size()));
-                    node.getParentNode().insertBefore(node.getOwnerDocument().adoptNode(selectedElement.cloneNode(true)), node.getNextSibling());
+                    Element newNode = (Element) node.getOwnerDocument().adoptNode(selectedElement.cloneNode(true));
+                    NamedNodeMap attributes = node.getAttributes();
+                    for (Node n : iterable(attributes))
+                        newNode.setAttributeNode((Attr) n.cloneNode(false));
+                    node.getParentNode().insertBefore(newNode, node.getNextSibling());
                     return true;
                 }
                 catch(Exception e) {e.printStackTrace();}
@@ -179,6 +177,16 @@ public class XmlParser {
                     double newValue = parseRandomNumber(node.getAttribute("XOM-random"));
                     node.removeAttribute("XOM-random");
                     node.setTextContent(String.valueOf(newValue));
+                }
+                catch(Exception e) {e.printStackTrace();}
+            }
+
+            // Renaming node
+            if(!node.getAttribute("XOM-rename").isBlank()) {
+                try {
+                    String newValue = node.getAttribute("XOM-rename");
+                    node.removeAttribute("XOM-rename");
+                    node.getOwnerDocument().renameNode(node, null, newValue);
                 }
                 catch(Exception e) {e.printStackTrace();}
             }

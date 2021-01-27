@@ -1,5 +1,6 @@
 package pl.edu.pw.mini.java.xmlomat;
 
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -24,6 +25,24 @@ public class Utilities {
                 if (!hasNext())
                     throw new NoSuchElementException();
                 return nodeList.item(index++);
+            }
+        };
+    }
+    public static Iterable<Node> iterable(final NamedNodeMap namedNodeMap) {
+        return () -> new Iterator<>() {
+
+            private int index = 0;
+
+            @Override
+            public boolean hasNext() {
+                return index < namedNodeMap.getLength();
+            }
+
+            @Override
+            public Node next() {
+                if (!hasNext())
+                    throw new NoSuchElementException();
+                return namedNodeMap.item(index++);
             }
         };
     }

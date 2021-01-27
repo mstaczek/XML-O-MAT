@@ -1,21 +1,20 @@
 package pl.edu.pw.mini.java.xmlomat;
 
-import javax.xml.transform.TransformerConfigurationException;
 import java.io.File;
 
 public class TestEnvironment {
 
-    public static void main(String[] args) throws TransformerConfigurationException {
+    public static void main(String[] args) {
         TestUI test = new TestUI();
     }
 
     public static class TestUI implements FileParsingUI {
         private XmlParser xmlparser;
 
-        public TestUI() throws TransformerConfigurationException {
+        public TestUI() {
             System.out.println("Hi");
             xmlparser = new XmlParser(this);
-            xmlparser.parseFiles(new File("example.xml"));
+            xmlparser.parseFiles(new File("examples/simple.xml"));
         }
 
         @Override

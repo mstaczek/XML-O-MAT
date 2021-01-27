@@ -9,7 +9,6 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 
 public class UnsavedXmlFile implements UnsavedFile {
-    public static Transformer outputTransformer;
     private final String inputPath;
     private final DOMSource content;
     private final FileParsingUI parentUI;
