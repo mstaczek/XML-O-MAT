@@ -1,0 +1,18 @@
+<wyniki_z_laboratorium>
+	<XOM-define-osoba>
+		<osoba>
+			<plec>M</plec>
+			<XOM-imie-m/>
+			<XOM-nazwisko-m/>
+			<wynik XOM-random="2:5:0.5"/>
+		</osoba>
+		<osoba>
+			<plec>K</plec>
+			<XOM-imie-k/>
+			<XOM-nazwisko-k/>
+			<wynik XOM-random="2:5:0.5"/>
+		</osoba>
+	</XOM-define-osoba>
+
+	<XOM-osoba XOM-repeat="20:35"/>
+</wyniki_z_laboratorium>

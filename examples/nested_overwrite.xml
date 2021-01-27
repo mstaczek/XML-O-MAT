@@ -1,0 +1,43 @@
+<wyniki_z_laboratorium>
+	<XOM-define-osoba>
+		<autor>
+			<plec>K</plec>
+			<XOM-imie-k/>
+			<XOM-nazwisko-k/>
+		</autor>
+	</XOM-define-osoba>
+	
+	<XOM-define-TN>
+		<value>TAK</value>
+		<value>NIE</value>
+	</XOM-define-TN>
+	
+	<XOM-define-feedback>
+		<skarga>
+			<XOM-osoba/>
+			<XOM-TN XOM-rename="rozpatrzona"/>
+			<XOM-TN XOM-rename="istotna"/>
+		</skarga>
+		<pochwala>
+			<XOM-osoba/>
+			<XOM-TN XOM-rename="istotna"/>
+		</pochwala>
+		<pytanie>
+			<XOM-osoba/>
+			<XOM-TN XOM-rename="pilne"/>
+			<XOM-TN XOM-rename="odpowiedziano"/>
+		</pytanie>
+	</XOM-define-feedback>
+
+	<XOM-feedback XOM-repeat="10:15"/>
+	
+	<XOM-define-osoba>
+		<autor>
+			<plec>M</plec>
+			<XOM-imie-m/>
+			<XOM-nazwisko-m/>
+		</autor>
+	</XOM-define-osoba>
+	
+	<XOM-feedback XOM-repeat="10:15"/>
+</wyniki_z_laboratorium>

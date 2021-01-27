@@ -1,0 +1,118 @@
+<zgloszone_wypadki>
+	<XOM-define-gatunek>
+		<gatunek>Pies</gatunek>
+		<gatunek>Pies</gatunek>
+		<gatunek>Pies</gatunek>
+		<gatunek>Pies</gatunek>
+		<gatunek>Kot</gatunek>
+		<gatunek>Kot</gatunek>
+		<gatunek>Kot</gatunek>		
+		<gatunek>Zając</gatunek>
+		<gatunek>Zając</gatunek>
+		<gatunek>Jaszczurka</gatunek>
+		<gatunek>Axolot</gatunek>
+	</XOM-define-gatunek>
+	
+	<XOM-define-osoba>
+		<osoba>
+			<plec>M</plec>
+			<XOM-imie-m/>
+			<XOM-nazwisko-m/>
+			<rok_urodzenia XOM-random="1990:2010"/>
+		</osoba>
+		<osoba>
+			<plec>K</plec>
+			<XOM-imie-k/>
+			<XOM-nazwisko-k/>
+			<rok_urodzenia XOM-random="1990:2010"/>
+		</osoba>
+	</XOM-define-osoba>
+	
+	<XOM-define-poszkodowany>
+		<XOM-osoba XOM-rename="poszkodowany"/>
+		<XOM-osoba XOM-rename="poszkodowany"/>
+		<XOM-osoba XOM-rename="poszkodowany"/>
+		<poszkodowany>
+			<XOM-gatunek/>
+			<wiek XOM-random="0:10:0.5"></wiek>
+			<XOM-osoba XOM-rename="wlasciciel"/>
+		</poszkodowany>
+	</XOM-define-poszkodowany>
+	
+	<XOM-define-stan-zdrowia>
+		<stan_zdrowia>Bez uszczerbku na zdrowiu</stan_zdrowia>
+		<stan_zdrowia>Bez uszczerbku na zdrowiu</stan_zdrowia>
+		<stan_zdrowia>Lekkie obrażenia</stan_zdrowia>
+		<stan_zdrowia>Lekkie obrażenia</stan_zdrowia>
+		<stan_zdrowia>Lekkie obrażenia</stan_zdrowia>
+		<stan_zdrowia>Ciężkie obrażenia</stan_zdrowia>
+		<stan_zdrowia>Ciężkie obrażenia</stan_zdrowia>
+		<stan_zdrowia>Dożywotnie kalectwo</stan_zdrowia>
+		<stan_zdrowia>Wprowadzenie w stan śpiączki</stan_zdrowia>
+		<stan_zdrowia>Zgon</stan_zdrowia>
+	</XOM-define-stan-zdrowia>
+	
+	<XOM-define-straty-majatkowe>
+		<straty_majatkowe>Brak</straty_majatkowe>
+		<straty_majatkowe>Brak</straty_majatkowe>
+		<straty_majatkowe>Niewielie</straty_majatkowe>
+		<straty_majatkowe>Niewielie</straty_majatkowe>
+		<straty_majatkowe>Niewielie</straty_majatkowe>
+		<straty_majatkowe>Znaczne</straty_majatkowe>
+		<straty_majatkowe>Uniemożliwiające samodzielne funkcjonowanie</straty_majatkowe>
+	</XOM-define-straty-majatkowe>
+	
+	<XOM-define-wydarzenie>
+		<wypadek>
+			<typ>Wypadek samochodowy</typ>
+			<XOM-osoba XOM-rename="sprawca"/>
+			<XOM-poszkodowany/>
+			<XOM-stan-zdrowia/>
+		</wypadek>
+		<wypadek>
+			<typ>Wypadek kolejowy</typ>
+			<XOM-osoba XOM-rename="sprawca"/>
+			<XOM-poszkodowany/>
+			<XOM-stan-zdrowia/>
+		</wypadek>
+		<wypadek>
+			<typ>Wypadek w pracy</typ>
+			<XOM-osoba XOM-rename="poszkodowany"/>
+			<XOM-stan-zdrowia/>
+		</wypadek>
+		<wypadek>
+			<typ>Wypadek budowlany</typ>
+			<XOM-osoba XOM-rename="wlasciciel_budynku"/>
+			<XOM-poszkodowany/>
+			<XOM-stan-zdrowia/>
+		</wypadek>
+		<katastrofa_naturalna>
+			<typ>Tornado</typ>
+			<XOM-poszkodowany/>
+			<XOM-stan-zdrowia/>
+			<XOM-straty-majatkowe/>
+		</katastrofa_naturalna>
+		<katastrofa_naturalna>
+			<typ>Trzęsienie ziemi</typ>
+			<XOM-poszkodowany/>
+			<XOM-stan-zdrowia/>
+			<XOM-straty-majatkowe/>
+		</katastrofa_naturalna>
+		<katastrofa_naturalna>
+			<typ>Powódź</typ>
+			<XOM-poszkodowany/>
+			<XOM-stan-zdrowia/>
+			<XOM-straty-majatkowe/>
+		</katastrofa_naturalna>
+		<wlamanie>
+			<typ>Włamanie</typ>
+			<XOM-osoba XOM-rename="sprawca"/>
+			<XOM-poszkodowany/>
+			<XOM-stan-zdrowia/>
+			<XOM-straty-majatkowe/>
+		</wlamanie>
+	</XOM-define-wydarzenie>
+	
+
+	<XOM-wydarzenie XOM-repeat="200:250"/>
+</zgloszone_wypadki>
