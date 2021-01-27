@@ -33,6 +33,7 @@ public class SimpleGUI extends Application implements FileParsingUI {
     private static boolean processingManyFiles = false;
     private static boolean processingSingleFile = false;
     private static String outDirectory = null;
+    private boolean invalidSingleFileStructure = false;
 
 
     @Override
@@ -203,6 +204,7 @@ public class SimpleGUI extends Application implements FileParsingUI {
     public void onFileInvalidStructure(String path) {
          if(processingSingleFile){
              Platform.runLater(() -> showCustomError("Could not parse file: " + path));
+             invalidSingleFileStructure = true;
         }
         else{
             showErrorMultithread(path);
@@ -238,7 +240,7 @@ public class SimpleGUI extends Application implements FileParsingUI {
         String originalName = processedFile.getName();
 
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialFileName("processed_" + originalName + ".xml");
+        fileChooser.setInitialFileName("processed_" + originalName);
         fileChooser.setInitialDirectory(new File(originalDirectory));
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("XML files (*.xml)", "*.xml");
         fileChooser.getExtensionFilters().add(extFilter);
@@ -288,13 +290,22 @@ public class SimpleGUI extends Application implements FileParsingUI {
     @Override
     public void endFileProcessing() {
         Platform.runLater(() -> {
-            Alert a = new Alert(Alert.AlertType.INFORMATION);
-            a.setTitle("Finished");
-            a.setHeaderText("Finished");
-            a.setContentText("Finished processing files.");
-            a.showAndWait();
+            if(processingSingleFile && invalidSingleFileStructure){
+                invalidSingleFileStructure = false;
+            }
+            else{
+                showFinishedDialog();
+            }
             resetGUIState();
         });
+    }
+
+    private void showFinishedDialog(){
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+        a.setTitle("Finished");
+        a.setHeaderText("Finished");
+        a.setContentText("Finished processing files.");
+        a.showAndWait();
     }
 
     private void resetGUIState(){
