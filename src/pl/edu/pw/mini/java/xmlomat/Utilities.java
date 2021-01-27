@@ -47,14 +47,24 @@ public class Utilities {
         };
     }
 
-    public static Double parseRandomNumber(String pattern) throws InvalidRandomPattern {
+    private static double[] parseRandomPattern(String pattern) throws InvalidRandomPattern {
         double[] vars = Arrays.stream(pattern.split(":")).mapToDouble(Double::parseDouble).toArray();
         if(vars.length == 0) throw new InvalidRandomPattern(pattern);
-        if(vars.length == 1) return vars[0];
-
-        double step = 1;
-        if(vars.length > 2) step = vars[2];
-        return ThreadLocalRandom.current().nextInt((int) Math.round(vars[0]/step), (int) Math.round(vars[1]/step+1))*step;
+        double[] returnVars = new double[3];
+        returnVars[0] = vars[0];
+        returnVars[1] = vars.length<2?vars[0]:vars[1];
+        returnVars[2] = vars.length<3?1:vars[2];
+        return returnVars;
+    }
+    public static Double parseRandomNumber(String pattern) throws InvalidRandomPattern {
+        double[] vars = parseRandomPattern(pattern);
+        return ThreadLocalRandom.current().nextInt((int) Math.round(vars[0]/vars[2]), (int) Math.round(vars[1]/vars[2]+1))*vars[2];
+    }
+    public static String stringifyRandomNumber(String pattern) throws InvalidRandomPattern {
+        double[] vars = parseRandomPattern(pattern);
+        Double val = parseRandomNumber(pattern);
+        if(vars[2] == Math.floor(vars[2])) return String.valueOf(Math.round(val));
+        return String.valueOf(val);
     }
 
 

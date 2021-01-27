@@ -11,8 +11,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static java.lang.Math.round;
 import static java.util.Collections.synchronizedList;
-import static pl.edu.pw.mini.java.xmlomat.Utilities.iterable;
-import static pl.edu.pw.mini.java.xmlomat.Utilities.parseRandomNumber;
+import static pl.edu.pw.mini.java.xmlomat.Utilities.*;
 
 public class XmlParser {
     private final FileParsingUI parentUI;
@@ -174,7 +173,7 @@ public class XmlParser {
             // Random inner value
             if(!node.getAttribute("XOM-random").isBlank()) {
                 try {
-                    double newValue = parseRandomNumber(node.getAttribute("XOM-random"));
+                    String newValue = stringifyRandomNumber(node.getAttribute("XOM-random"));
                     node.removeAttribute("XOM-random");
                     node.setTextContent(String.valueOf(newValue));
                 }

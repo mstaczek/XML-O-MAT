@@ -14,7 +14,7 @@ public class TestEnvironment {
         public TestUI() {
             System.out.println("Hi");
             xmlparser = new XmlParser(this);
-            xmlparser.parseFiles(new File("examples/simple.xml"));
+            xmlparser.parseFiles(new File("examples/complex.xml"));
         }
 
         @Override
