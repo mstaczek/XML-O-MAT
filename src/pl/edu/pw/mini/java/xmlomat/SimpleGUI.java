@@ -69,6 +69,10 @@ public class SimpleGUI extends Application implements FileParsingUI {
             processingSingleFile = true;
             xmlparser.parseFiles(file);
         }
+        else{
+            showCustomError("No file was selected");
+            mainImage.setImage(minilogo);
+        }
     }
 
     public void parseMultipleFileOnClick(ActionEvent actionEvent) {
@@ -94,6 +98,7 @@ public class SimpleGUI extends Application implements FileParsingUI {
         }
         else{
             showCustomError("No files were selected");
+            mainImage.setImage(minilogo);
         }
     }
 
